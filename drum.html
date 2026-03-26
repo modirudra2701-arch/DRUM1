@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Studio Kit — Realistic Drum Machine</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{
+      background:radial-gradient(ellipse at 50% 30%,#1a1008 0%,#0a0804 100%);
+      min-height:100vh;padding:2rem 1rem 3rem;
+      display:flex;flex-direction:column;align-items:center;gap:1.2rem;
+      font-family:'DM Mono',monospace;
+    }
+    .logo{
+      font-family:'Bebas Neue',sans-serif;font-size:46px;letter-spacing:0.15em;
+      background:linear-gradient(135deg,#d4a847,#f5d78e,#b8841f);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .sub{font-size:10px;color:#4a3a20;letter-spacing:0.3em;text-transform:uppercase;margin-top:-8px;}
+    .display{
+      background:#080604;border:1px solid #2a1f0a;border-radius:6px;
+      padding:8px 28px;color:#d4a847;letter-spacing:0.15em;
+      font-family:'Bebas Neue',sans-serif;font-size:24px;text-align:center;min-width:200px;
+      box-shadow:inset 0 0 16px rgba(0,0,0,0.9);
+    }
+    .kit{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;max-width:580px;}
+    .row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+
+    .pad{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+      cursor:pointer;position:relative;overflow:hidden;
+      -webkit-tap-highlight-color:transparent;user-select:none;
+      transition:transform 0.06s;
+    }
+    .pad.hit{transform:scale(0.90);}
+    .pad-name{font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;position:relative;z-index:2;}
+    .pad-key{font-size:9px;opacity:0.5;position:relative;z-index:2;}
+
+    /* CYMBAL */
+    .cymbal{
+      border-radius:50%;
+      background:radial-gradient(ellipse at 35% 30%,#f5e070 0%,#c8980a 35%,#8a6205 65%,#4a3500 100%);
+      box-shadow:0 5px 0 #1a0f00,inset 0 2px 4px rgba(255,220,80,0.3),inset 0 -2px 6px rgba(0,0,0,0.6);
+      border:2px solid #5a3f00;
+    }
+    .cymbal .pad-name{color:#3a2800;text-shadow:0 1px 0 rgba(255,200,50,0.4);}
+    .cymbal .pad-key{color:#5a4200;}
+    .cymbal.hit{box-shadow:0 1px 0 #1a0f00,inset 0 2px 14px rgba(255,220,80,0.7);}
+    .hihat-cym{width:84px;height:84px;}
+    .crash-cym{width:98px;height:98px;}
+    .ride-cym{width:106px;height:106px;}
+
+    /* TOM wrapper */
+    .tom-wrap{position:relative;}
+    .tom1{width:94px;height:94px;}
+    .tom2{width:94px;height:94px;}
+    .tom3{width:94px;height:94px;}
+    .tom-outer{position:absolute;inset:0;border-radius:50%;border:3px solid #8a5a20;box-shadow:0 5px 0 #0a0500,inset 0 -3px 6px rgba(0,0,0,0.6);}
+    .tom1 .tom-outer{background:radial-gradient(ellipse at 40% 35%,#7a2010 0%,#4a1008 50%,#200500 100%);}
+    .tom2 .tom-outer{background:radial-gradient(ellipse at 40% 35%,#204080 0%,#102040 50%,#050f1e 100%);}
+    .tom3 .tom-outer{background:radial-gradient(ellipse at 40% 35%,#206030 0%,#103018 50%,#051008 100%);}
+    .tom-head{
+      position:absolute;inset:9px;border-radius:50%;
+      background:radial-gradient(ellipse at 40% 35%,#f0ede0 0%,#d4ceb8 40%,#a09880 100%);
+      box-shadow:inset 0 2px 5px rgba(0,0,0,0.35);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    }
+    .tom-head .pad-name{color:#404030;}
+    .tom-head .pad-key{color:#706858;}
+
+    /* SNARE */
+    .snare-wrap{width:112px;height:112px;position:relative;}
+    .snare-outer{
+      position:absolute;inset:0;border-radius:50%;
+      background:radial-gradient(ellipse at 40% 35%,#e8e8e8 0%,#b0b0b0 40%,#707070 100%);
+      border:3px solid #d0d0d0;
+      box-shadow:0 6px 0 #303030,inset 0 -3px 6px rgba(0,0,0,0.4),inset 0 3px 6px rgba(255,255,255,0.4);
+    }
+    .snare-head{
+      position:absolute;inset:10px;border-radius:50%;
+      background:radial-gradient(ellipse at 40% 35%,#f8f8f0 0%,#e0ddd0 40%,#c0bdb0 100%);
+      box-shadow:inset 0 2px 4px rgba(0,0,0,0.3);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    }
+    .snare-head .pad-name{color:#404040;}
+    .snare-head .pad-key{color:#808080;}
+
+    /* KICK */
+    .kick-wrap{width:144px;height:144px;position:relative;}
+    .kick-outer{
+      position:absolute;inset:0;border-radius:50%;
+      background:radial-gradient(ellipse at 40% 35%,#5a3a1a 0%,#2a1a08 50%,#150c02 100%);
+      border:3px solid #8a5a20;
+      box-shadow:0 9px 0 #0a0500,inset 0 -4px 8px rgba(0,0,0,0.7),inset 0 4px 8px rgba(100,60,0,0.3);
+    }
+    .kick-head{
+      position:absolute;inset:12px;border-radius:50%;
+      background:radial-gradient(ellipse at 40% 35%,#f0ede0 0%,#d4ceb8 40%,#a09880 100%);
+      box-shadow:inset 0 3px 6px rgba(0,0,0,0.4);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+      z-index:2;
+    }
+    .kick-logo{
+      width:40px;height:40px;border-radius:50%;
+      background:radial-gradient(circle,#d4a847,#8a6010);
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Bebas Neue',sans-serif;font-size:12px;color:#2a1800;letter-spacing:0.1em;
+    }
+
+    .hint{font-size:10px;color:#3a2a10;letter-spacing:0.1em;text-align:center;margin-top:8px;}
+
+    @media(max-width:480px){
+      .logo{font-size:34px;}
+      .kick-wrap{width:118px;height:118px;}
+      .snare-wrap{width:94px;height:94px;}
+      .tom1,.tom2,.tom3{width:78px;height:78px;}
+      .hihat-cym{width:70px;height:70px;}
+      .crash-cym{width:82px;height:82px;}
+      .ride-cym{width:90px;height:90px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">STUDIO KIT</div>
+  <div class="sub">Professional Drum Machine</div>
+  <div class="display" id="disp">READY</div>
+
+  <div class="kit">
+    <div class="row">
+      <div class="pad cymbal hihat-cym" data-sound="hihat" data-key="q" data-label="Hi-Hat"><span class="pad-name">Hi-Hat</span><span class="pad-key">Q</span></div>
+      <div class="pad cymbal crash-cym" data-sound="crash" data-key="w" data-label="Crash"><span class="pad-name">Crash</span><span class="pad-key">W</span></div>
+      <div class="pad cymbal ride-cym"  data-sound="ride"  data-key="e" data-label="Ride"><span class="pad-name">Ride</span><span class="pad-key">E</span></div>
+      <div class="pad cymbal hihat-cym" data-sound="openhat" data-key="r" data-label="Open Hat"><span class="pad-name">Open Hat</span><span class="pad-key">R</span></div>
+    </div>
+    <div class="row">
+      <div class="pad tom-wrap tom1" data-sound="tom1" data-key="a" data-label="High Tom">
+        <div class="tom-outer"></div><div class="tom-head"><span class="pad-name">High Tom</span><span class="pad-key">A</span></div>
+      </div>
+      <div class="pad tom-wrap tom2" data-sound="tom2" data-key="s" data-label="Mid Tom">
+        <div class="tom-outer"></div><div class="tom-head"><span class="pad-name">Mid Tom</span><span class="pad-key">S</span></div>
+      </div>
+      <div class="pad tom-wrap tom3" data-sound="tom3" data-key="d" data-label="Floor Tom">
+        <div class="tom-outer"></div><div class="tom-head"><span class="pad-name">Floor Tom</span><span class="pad-key">D</span></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="pad snare-wrap" data-sound="snare" data-key="f" data-label="Snare">
+        <div class="snare-outer"></div>
+        <div class="snare-head"><span class="pad-name">Snare</span><span class="pad-key">F</span></div>
+      </div>
+      <div class="pad kick-wrap" data-sound="kick" data-key="space" data-label="Kick">
+        <div class="kick-outer"></div>
+        <div class="kick-head"><div class="kick-logo">KICK</div><span style="font-size:9px;color:#706858;">SPACE</span></div>
+      </div>
+      <div class="pad snare-wrap" data-sound="clap" data-key="g" data-label="Clap">
+        <div class="snare-outer" style="background:radial-gradient(ellipse at 40% 35%,#e8d0d0 0%,#c09090 40%,#806060 100%);border-color:#c08080;"></div>
+        <div class="snare-head" style="background:radial-gradient(ellipse at 40% 35%,#f8f0f0 0%,#e8d8d8 40%,#c8b8b8 100%);">
+          <span class="pad-name" style="color:#604040;">Clap</span><span class="pad-key" style="color:#907070;">G</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hint" id="hint">TAP DRUMS & CYMBALS TO PLAY &nbsp;|&nbsp; KEYBOARD: Q W E R &nbsp; A S D &nbsp; F SPACE G</div>
+
+  <script>
+    const AC=window.AudioContext||window.webkitAudioContext;
+    const ac=new AC();
+    function resume(){if(ac.state==='suspended')ac.resume();}
+    function noise(dur){
+      const b=ac.createBuffer(1,ac.sampleRate*dur,ac.sampleRate);
+      const d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return b;
+    }
+    function mf(type,freq,Q){const f=ac.createBiquadFilter();f.type=type;f.frequency.value=freq;if(Q)f.Q.value=Q;return f;}
+    function mg(v){const g=ac.createGain();g.gain.value=v;return g;}
+
+    function playKick(){
+      resume();const t=ac.currentTime;
+      const o1=ac.createOscillator(),g1=mg(1.2);
+      o1.type='sine';o1.frequency.setValueAtTime(55,t);o1.frequency.exponentialRampToValueAtTime(28,t+0.5);
+      g1.gain.setValueAtTime(1.2,t);g1.gain.exponentialRampToValueAtTime(0.001,t+0.55);
+      o1.connect(g1);g1.connect(ac.destination);o1.start(t);o1.stop(t+0.55);
+      const o2=ac.createOscillator(),g2=mg(0.7);
+      o2.type='sine';o2.frequency.setValueAtTime(200,t);o2.frequency.exponentialRampToValueAtTime(50,t+0.08);
+      g2.gain.setValueAtTime(0.7,t);g2.gain.exponentialRampToValueAtTime(0.001,t+0.08);
+      o2.connect(g2);g2.connect(ac.destination);o2.start(t);o2.stop(t+0.08);
+      const s=ac.createBufferSource(),gn=mg(0.15),f=mf('lowpass',120);
+      s.buffer=noise(0.06);s.connect(f);f.connect(gn);gn.connect(ac.destination);
+      gn.gain.setValueAtTime(0.15,t);gn.gain.exponentialRampToValueAtTime(0.001,t+0.06);
+      s.start(t);s.stop(t+0.06);
+    }
+    function playSnare(){
+      resume();const t=ac.currentTime;
+      const o=ac.createOscillator(),go=mg(0.5);
+      o.type='triangle';o.frequency.setValueAtTime(185,t);o.frequency.exponentialRampToValueAtTime(100,t+0.1);
+      go.gain.setValueAtTime(0.5,t);go.gain.exponentialRampToValueAtTime(0.001,t+0.15);
+      o.connect(go);go.connect(ac.destination);o.start(t);o.stop(t+0.15);
+      const s=ac.createBufferSource(),gs=mg(0.7),f1=mf('highpass',1500),f2=mf('bandpass',3500,1.5);
+      s.buffer=noise(0.22);s.connect(f1);f1.connect(f2);f2.connect(gs);gs.connect(ac.destination);
+      gs.gain.setValueAtTime(0.7,t);gs.gain.exponentialRampToValueAtTime(0.001,t+0.22);
+      s.start(t);s.stop(t+0.22);
+    }
+    function playHihat(open){
+      resume();const t=ac.currentTime;const dur=open?0.5:0.06;
+      const s=ac.createBufferSource(),g=mg(0.5),f1=mf('highpass',7000),f2=mf('bandpass',10000,0.8);
+      s.buffer=noise(dur);s.connect(f1);f1.connect(f2);f2.connect(g);g.connect(ac.destination);
+      g.gain.setValueAtTime(0.5,t);g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+      s.start(t);s.stop(t+dur);
+      const o=ac.createOscillator(),go=mg(0.08);
+      o.type='square';o.frequency.value=open?6000:8000;
+      go.gain.setValueAtTime(0.08,t);go.gain.exponentialRampToValueAtTime(0.001,t+(open?0.3:0.04));
+      o.connect(go);go.connect(ac.destination);o.start(t);o.stop(t+(open?0.3:0.04));
+    }
+    function playTom(freq,decay){
+      resume();const t=ac.currentTime;
+      const o=ac.createOscillator(),g=mg(0.9);
+      o.type='sine';o.frequency.setValueAtTime(freq,t);o.frequency.exponentialRampToValueAtTime(freq*0.4,t+decay);
+      g.gain.setValueAtTime(0.9,t);g.gain.exponentialRampToValueAtTime(0.001,t+decay);
+      o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+decay);
+      const s=ac.createBufferSource(),gn=mg(0.2),f=mf('bandpass',freq*2,2);
+      s.buffer=noise(0.04);s.connect(f);f.connect(gn);gn.connect(ac.destination);
+      gn.gain.setValueAtTime(0.2,t);gn.gain.exponentialRampToValueAtTime(0.001,t+0.04);
+      s.start(t);s.stop(t+0.04);
+    }
+    function playCymbal(freq,dur){
+      resume();const t=ac.currentTime;
+      [1,1.3028,1.5742,1.9523,2.2511,2.9142].forEach(r=>{
+        const o=ac.createOscillator(),g=mg(0.07);
+        o.type='square';o.frequency.value=freq*r;
+        g.gain.setValueAtTime(0.07,t);g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+        o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+dur);
+      });
+      const s=ac.createBufferSource(),gn=mg(0.3),f=mf('highpass',5000);
+      s.buffer=noise(dur);s.connect(f);f.connect(gn);gn.connect(ac.destination);
+      gn.gain.setValueAtTime(0.3,t);gn.gain.exponentialRampToValueAtTime(0.001,t+dur);
+      s.start(t);s.stop(t+dur);
+    }
+    function playClap(){
+      resume();const t=ac.currentTime;
+      [0,0.012,0.024,0.036].forEach((offset,i)=>{
+        const s=ac.createBufferSource(),g=mg(i<3?0.5:0.7),f1=mf('bandpass',1100,0.7),f2=mf('highpass',800);
+        s.buffer=noise(i<3?0.04:0.18);s.connect(f1);f1.connect(f2);f2.connect(g);g.connect(ac.destination);
+        g.gain.setValueAtTime(i<3?0.5:0.7,t+offset);g.gain.exponentialRampToValueAtTime(0.001,t+offset+(i<3?0.04:0.18));
+        s.start(t+offset);s.stop(t+offset+(i<3?0.04:0.18));
+      });
+    }
+
+    const sounds={
+      kick:playKick,snare:playSnare,
+      hihat:()=>playHihat(false),openhat:()=>playHihat(true),
+      tom1:()=>playTom(220,0.28),tom2:()=>playTom(160,0.35),tom3:()=>playTom(100,0.45),
+      crash:()=>playCymbal(440,2.0),ride:()=>playCymbal(600,1.2),clap:playClap,
+    };
+
+    function triggerPad(pad){
+      const fn=sounds[pad.dataset.sound];if(!fn)return;
+      fn();pad.classList.add('hit');
+      setTimeout(()=>pad.classList.remove('hit'),100);
+      document.getElementById('disp').textContent=pad.dataset.label.toUpperCase();
+    }
+    document.querySelectorAll('.pad').forEach(pad=>{
+      pad.addEventListener('mousedown',e=>{e.preventDefault();triggerPad(pad);});
+      pad.addEventListener('touchstart',e=>{e.preventDefault();triggerPad(pad);},{passive:false});
+    });
+    const keyMap={};
+    document.querySelectorAll('.pad').forEach(pad=>{keyMap[pad.dataset.key]=pad;});
+    document.addEventListener('keydown',e=>{
+      if(e.repeat)return;
+      const k=e.key===' '?'space':e.key.toLowerCase();
+      if(keyMap[k])triggerPad(keyMap[k]);
+    });
+    if('ontouchstart' in window)
+      document.getElementById('hint').textContent='TAP DRUMS & CYMBALS TO PLAY';
+  </script>
+</body>
+</html>
